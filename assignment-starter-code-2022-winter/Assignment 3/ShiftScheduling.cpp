@@ -1,14 +1,79 @@
 #include "ShiftScheduling.h"
+#include "error.h"
 using namespace std;
 
 /* TODO: Refer to ShiftScheduling.h for more information about what this function should do.
  * Then, delete this comment and replace it with one of your own.
  */
+Set<Shift> innerFunction(Set<Shift>& shifts, int maxHours, const Set<Shift>& selected) {
+    if(maxHours < 0) {
+        error("- hours");
+    }
+    if(maxHours == 0) {
+        return selected;
+    }
+    if(shifts.isEmpty()) {
+        return selected;
+    }
+    bool noleap = false;
+    Shift theOne;
+    for(Shift tmp: shifts) {
+        noleap = false;
+        if(lengthOf(tmp) > maxHours) {
+            continue;
+        }
+        noleap = true;
+        for(Shift tmp2: selected) {
+            if(overlapsWith(tmp, tmp2)) {
+                noleap = false;
+                break;
+            }
+        }
+        if(noleap) {
+            theOne = tmp;
+            break;
+        }
+    }
+    if(!noleap){
+        return selected;
+    }
+    shifts.remove(theOne);
+    auto s0 = shifts;
+    auto s1 = shifts;
+    if(noleap) {
+        Set<Shift> tmp3 = innerFunction(s0, maxHours, selected);
+        Set<Shift> tmp4 = innerFunction(s1, maxHours - lengthOf(theOne), selected + theOne);
+        int summ = 0;
+        int summ1 = 0;
+        int length1 = 0;
+        int length2 = 0;
+        for(Shift sum: tmp3) {
+            summ += valueOf(sum);
+            length1 += lengthOf(sum);
+        }
+        for(Shift sum: tmp4) {
+            summ1 += valueOf(sum);
+            length2 += lengthOf(sum);
+        }
+        if(summ > summ1 ) {
+            return tmp3;
+        }
+        if(summ < summ1 ) {
+            return tmp4;
+        }
+        if(summ == summ1 ) {
+            if(length1 >= length2) {
+                return tmp4;
+            }
+            return tmp3;
+        }
+    }
+    return selected;
+}
 Set<Shift> highestValueScheduleFor(const Set<Shift>& shifts, int maxHours) {
-    /* TODO: Delete the next few lines and implement this function. */
-    (void) shifts;
-    (void) maxHours;
-    return {};
+    Set<Shift> shift = shifts;
+    Set<Shift> selected;
+    return innerFunction(shift, maxHours, selected);
 }
 
 

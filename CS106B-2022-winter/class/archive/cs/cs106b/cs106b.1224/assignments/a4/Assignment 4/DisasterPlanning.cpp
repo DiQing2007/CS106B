@@ -7,10 +7,45 @@ using namespace std;
 bool canBeMadeDisasterReady(const Map<string, Set<string>>& roadNetwork,
                             int numCities,
                             Set<string>& supplyLocations) {
-    /* TODO: Delete the next few lines and implement this function. */
-    (void) roadNetwork;
-    (void) numCities;
-    (void) supplyLocations;
+    if(numCities < 0) {
+        error("how did I get there");
+    }
+    Set<string> allroad;
+    Set<string> suppliedCity;
+    for(auto city: roadNetwork) {
+        allroad += city;
+    }
+    for(auto city: supplyLocations) {
+        suppliedCity += roadNetwork[city];
+        suppliedCity += city;
+    }
+    if(suppliedCity == allroad) {
+        return true;
+    }
+    else if(numCities == 0) {
+        return false;
+    }
+    for(auto city: roadNetwork) {
+        if(!suppliedCity.contains(city)) {
+            supplyLocations.add(city);
+            if(canBeMadeDisasterReady(roadNetwork, numCities - 1, supplyLocations)) {
+                return true;
+            }
+            supplyLocations.remove(city);
+            for(auto neibhorCity: roadNetwork[city]) {
+                if(!supplyLocations.contains(neibhorCity)){
+                    supplyLocations.add(neibhorCity);
+                    if(canBeMadeDisasterReady(roadNetwork, numCities - 1, supplyLocations)) {
+                        return true;
+                    }
+                    else {
+                        supplyLocations.remove(neibhorCity);
+                    }
+                }
+            }
+            break;
+        }
+    }
     return false;
 }
 

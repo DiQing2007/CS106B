@@ -1,17 +1,128 @@
 #include "Matchmaker.h"
 using namespace std;
 
-bool hasPerfectMatching(const Map<string, Set<string>>& possibleLinks, Set<Pair>& matching) {
-    /* TODO: Delete this comment and these remaining lines, then implement this function. */
-    (void) possibleLinks;
-    (void) matching;
+bool hasPerfectMatchingHelper(Map<string, Set<string>>& possibleLinks, Set<Pair>& matching, const Set<string>& paird) {
+    Set<string> pairr;
+    for(const Pair& person: matching) {
+        pairr += person.first();
+        pairr += person.second();
+    }
+    if(paird == pairr) {
+        return true;
+    }
+    for(auto& tmp: possibleLinks) {
+        if(possibleLinks.get(tmp).isEmpty()) {
+            return false;
+        }
+    }
+    auto person = possibleLinks.firstKey();
+    auto retation = possibleLinks.get(person);
+    for(auto& tmp: retation) {
+        auto tmpRelation = possibleLinks.get(tmp);
+        possibleLinks.remove(tmp);
+        possibleLinks.remove(person);
+        Set<string> forTmp;
+        Set<string> forperson;
+        for(auto& relationship: possibleLinks) {
+            if(possibleLinks.get(relationship).contains(tmp)) {
+                forTmp += relationship;
+                possibleLinks[relationship].remove(tmp);
+            }
+            if(possibleLinks.get(relationship).contains(person)) {
+                forperson += relationship;
+                possibleLinks[relationship].remove(person);
+            }
+        }
+        Pair tmp1 = {tmp, person};
+        matching += tmp1;
+        if(hasPerfectMatchingHelper(possibleLinks, matching, paird)) {
+            return true;
+        }
+        for(auto& relationship: possibleLinks) {
+            if(forTmp.contains(relationship)) {
+                possibleLinks[relationship].add(tmp);
+                forTmp.remove(relationship);
+            }
+            if(forperson.contains(relationship)) {
+                possibleLinks[relationship].add(person);
+                forperson.remove(relationship);
+            }
+        }
+        possibleLinks.put(person, retation);
+        possibleLinks.put(tmp, tmpRelation);
+        matching -= tmp1;
+    }
     return false;
+}
+bool hasPerfectMatching(const Map<string, Set<string>>& possibleLinks, Set<Pair>& matching) {
+    Map<string, Set<string>> copyMap = possibleLinks;
+    Set<string> paird;
+    for(auto tmp: possibleLinks){
+        paird += tmp;
+    }
+    return hasPerfectMatchingHelper(copyMap, matching, paird);
+}
+
+Set<Pair> maximumWeightMatchingHelper(const Map<string, Map<string, int>>& possibleLinks, Set<string>& selected) {
+    string guy;
+    int max = -1;
+    for(auto person: possibleLinks) {
+        if(!selected.contains(person)) {
+            guy = person;
+            break;
+        }
+    }
+    if(guy.empty()) {
+        Set<Pair> tmp;
+        return tmp;
+    }
+    selected.add(guy);
+    Map<string, int> table;
+    Map<string, Set<Pair>> table2;
+    for(auto connectedPerson: possibleLinks[guy]) {
+        if(!selected.contains(connectedPerson)) {
+            selected.add(connectedPerson);
+            auto includd = maximumWeightMatchingHelper(possibleLinks, selected);
+            table2.put(connectedPerson, includd);
+            selected.remove(connectedPerson);
+            int sum = possibleLinks[guy][connectedPerson];
+            for(const Pair& weightTable: includd) {
+                sum += possibleLinks[weightTable.first()][weightTable.second()];
+            }
+            table.put(connectedPerson, sum);
+        }
+    }
+    auto includd2 = maximumWeightMatchingHelper(possibleLinks, selected);
+    int sum = 0;
+    for(const Pair& weightTable2: includd2) {
+        sum += possibleLinks[weightTable2.first()][weightTable2.second()];
+    }
+    selected.remove(guy);
+    table.put("self", sum);
+    table2.put("self", includd2);
+    string reserse = "";
+    for(auto whoo: table) {
+        if(max < table[whoo]) {
+            reserse = whoo;
+            max = table[whoo];
+        }
+    }
+    if(reserse == "self") {
+        return table2["self"];
+    }
+    else {
+        auto tmp = table2[reserse];
+        tmp.add({guy, reserse});
+        return tmp;
+    }
+
+
 }
 
 Set<Pair> maximumWeightMatching(const Map<string, Map<string, int>>& possibleLinks) {
-    /* TODO: Delete this comment and these remaining lines, then implement this function. */
-    (void) possibleLinks;
-    return { };
+    Set<string> selected;
+    return maximumWeightMatchingHelper(possibleLinks, selected);
+
 }
 
 /* * * * * Test Cases Below This Point * * * * */

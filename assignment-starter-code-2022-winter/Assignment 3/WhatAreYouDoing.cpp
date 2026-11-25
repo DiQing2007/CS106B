@@ -1,4 +1,6 @@
 #include "WhatAreYouDoing.h"
+#include "strlib.h"
+#include<cctype>
 using namespace std;
 
 /* TODO: Read the comments in WhatAreYouDoing.h to see what this function needs to do, then
@@ -7,10 +9,37 @@ using namespace std;
  * Don't forget about the tokenize function defined in WhatAreYouDoing.h; you'll almost
  * certainly want to use it.
  */
+Set<string> innerfun(Vector<string>& tokens, Set<string>& empty);
 Set<string> allEmphasesOf(const string& sentence) {
-    /* TODO: Delete this line and the next one, then implement this function. */
-    (void) sentence;
-    return {};
+    Vector<string> tokens = tokenize(sentence);
+    Set<string> empty;
+    return innerfun(tokens, empty);
+}
+Set<string> innerfun(Vector<string>& tokens, Set<string>& empty) {
+    if(tokens.isEmpty()) {
+        return {""};
+    }
+    string tmp = tokens.get(0);
+    if(isalpha(tmp[0])) {
+        tokens.remove(0);
+        for(string tmpp: innerfun(tokens, empty)) {
+            string tmp1 = toUpperCase(tmp) + tmpp;
+            string tmp2 = toLowerCase(tmp) + tmpp;
+            empty.remove(tmpp);
+            empty.add(tmp1);
+            empty.add(tmp2);
+        }
+        return empty;
+    }
+    else {
+        tokens.remove(0);
+        for(string tmpp: innerfun(tokens, empty)) {
+            string tmp2 = tmp + tmpp;
+            empty.remove(tmpp);
+            empty.add(tmp2);
+        }
+        return empty;
+    }
 }
 
 /* * * * * * Test Cases * * * * * */
