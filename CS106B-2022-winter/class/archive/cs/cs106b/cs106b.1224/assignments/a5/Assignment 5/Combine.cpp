@@ -2,10 +2,38 @@
 #include "Combine.h"
 using namespace std;
 
+
 Vector<DataPoint> combine(const Vector<Vector<DataPoint>>& sequences) {
-    /* TODO: Delete the next few lines and implement this. */
-    (void) sequences;
-    return {};
+    if(sequences.isEmpty()) {
+        Vector<DataPoint> tmp;
+        return tmp;
+    }
+    if(sequences.size() == 1) {
+        return sequences[0];
+    }
+    Vector<Vector<DataPoint>> subListA = sequences.subList(0, sequences.size() / 2);
+    Vector<Vector<DataPoint>> subListB = sequences.subList(sequences.size() / 2);
+    Vector<DataPoint> subSequencesA = combine(subListA);
+    Vector<DataPoint> subSequencesB = combine(subListB);
+    DataPoint templat = {"", 0};
+    Vector<DataPoint> mergeList(subSequencesA.size() + subSequencesB.size(), templat);
+    for(int i = 0, j = 0, k = 0; k < mergeList.size();) {
+        if(i == subSequencesA.size()) {
+            mergeList[k++] = subSequencesB[j++];
+            continue;
+        }
+        else if(j == subSequencesB.size()) {
+            mergeList[k++] = subSequencesA[i++];
+            continue;
+        }
+        if(subSequencesA[i].weight > subSequencesB[j].weight) {
+            mergeList[k++] = subSequencesB[j++];
+        }
+        else {
+            mergeList[k++] = subSequencesA[i++];
+        }
+    }
+    return mergeList;
 }
 
 
